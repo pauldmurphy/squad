@@ -50,9 +50,9 @@ When you're in a Copilot session, Ralph self-chains the coordinator's work loop:
 2. Ralph checks GitHub for more: untriaged issues, assigned-but-unstarted items, draft PRs, failing CI
 3. Work found → triage, assign, spawn agents
 4. Results collected → Ralph checks again **immediately** — no pause, no asking permission
-5. Board clear → Ralph idles (use `npx squad watch` for persistent polling)
+5. Board clear → Ralph idles (use `npx github:bradygaster/squad watch` for persistent polling)
 
-**Ralph never stops on his own while work remains.** He keeps cycling through the backlog until every issue is closed, every PR is merged, and CI is green. When the board clears, Ralph idles — run `npx squad watch` in a separate terminal for persistent polling, or use the cloud heartbeat for fully unattended monitoring. The only things that stop Ralph's active loop: the board is clear, you say "idle"/"stop", or the session ends.
+**Ralph never stops on his own while work remains.** He keeps cycling through the backlog until every issue is closed, every PR is merged, and CI is green. When the board clears, Ralph idles — run `npx github:bradygaster/squad watch` in a separate terminal for persistent polling, or use the cloud heartbeat for fully unattended monitoring. The only things that stop Ralph's active loop: the board is clear, you say "idle"/"stop", or the session ends.
 
 ### Between Sessions (GitHub Actions Heartbeat)
 
@@ -99,14 +99,14 @@ Ralph doesn't run silently forever. Every 3-5 rounds, Ralph reports and **keeps 
 
 Ralph does **not** ask permission to continue — he keeps working. The only things that stop Ralph: the board is clear, you say "idle"/"stop", or the session ends.
 
-## Watch Mode (`npx squad watch`)
+## Watch Mode (`npx github:bradygaster/squad watch`)
 
 Ralph's in-session loop processes work while it exists, then idles. For **persistent polling** when you're away from the keyboard, run the `squad watch` command in a separate terminal:
 
 ```bash
-npx squad watch                    # polls every 10 minutes (default)
-npx squad watch --interval 5       # polls every 5 minutes
-npx squad watch --interval 30      # polls every 30 minutes
+npx github:bradygaster/squad watch                    # polls every 10 minutes (default)
+npx github:bradygaster/squad watch --interval 5       # polls every 5 minutes
+npx github:bradygaster/squad watch --interval 30      # polls every 30 minutes
 ```
 
 This runs as a standalone local process (not inside Copilot) that:
@@ -120,7 +120,7 @@ This runs as a standalone local process (not inside Copilot) that:
 | Layer | When | How |
 |-------|------|-----|
 | **In-session** | You're at the keyboard | "Ralph, go" — active loop while work exists |
-| **Local watchdog** | You're away but machine is on | `npx squad watch --interval 10` |
+| **Local watchdog** | You're away but machine is on | `npx github:bradygaster/squad watch --interval 10` |
 | **Cloud heartbeat** | Fully unattended | `squad-heartbeat.yml` GitHub Actions cron |
 
 ## Ralph's Board View
@@ -180,7 +180,7 @@ Ralph, status
 Runs a single check cycle and shows the current board state without activating the work loop.
 
 ```
-npx squad watch --interval 5
+npx github:bradygaster/squad watch --interval 5
 ```
 
 Starts persistent local polling — checks GitHub every 5 minutes for new squad work and triages automatically.
