@@ -41,6 +41,14 @@
 - **Rationale:** Core developer — writes code. Quality and accuracy first for implementation, refactoring, and runtime work.
 - **Fallback:** Standard chain
 
+## Git Safety
+
+Owns the git safety rule for all agents. Before any destructive git operation (`git checkout --`, `git restore`, `git reset --hard`, `git clean -f`):
+
+1. Run `git status --porcelain`. If output is non-empty, uncommitted changes exist.
+2. Only discard files modified in the current agent turn.
+3. If changes from a prior turn or different agent are present — stop. Write a conflict note to `.squad/decisions/inbox/fenster-git-safety-{timestamp}.md` and surface it to the user. Never destroy uncommitted work you didn't create in this turn.
+
 ## Collaboration
 
 Before starting work, run `git rev-parse --show-toplevel` to find the repo root, or use the `TEAM ROOT` provided in the spawn prompt. All `.ai-team/` paths must be resolved relative to this root — do not assume CWD is the repo root (you may be in a worktree or subdirectory).

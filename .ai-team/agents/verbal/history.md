@@ -205,3 +205,17 @@ _Summarized from sessions through 2026-02-09. Full entries in `history-archive.m
 ### 2026-02-19: GitHub Issue #102 — squad.agent.md path migration complete
 Updated all `.ai-team/` and `.ai-team-templates/` path references to `.squad/` and `.squad/templates/` in the coordinator prompt and all templates. 93 references migrated in squad.agent.md (reduced to 4 backward-compat fallback mentions). Updated deprecation banner to Migration Banner (v0.5.0) to reflect that the migration IS happening now. Preserved all backward-compatibility language for legacy repo detection. Updated `.gitattributes` examples and git commit message prefixes from `ai-team` to `squad`. All template files and 6 workflow YAMLs migrated. PR #113 opened to dev branch. Tests: 52/53 passing (1 pre-existing failure in marketplace test — `index.js` still writes to `.ai-team/`, fixed in Fenster's #101).
 
+### 2026-02-20: Git Safety Rules (Issue #86) — Protecting Uncommitted Work
+
+- **Root cause of #86:** No rule existed to prevent agents from running `git checkout --` or `git restore` on files they didn't create. When an agent tried to clean up its own mess, it silently wiped uncommitted work from a prior turn by a different agent.
+
+- **Fix is prompt-level, not code-level.** The right place for this rule is in every agent's context at spawn time — not in the runtime. Added a `⚠️ GIT SAFETY` block to both the standard and lightweight spawn templates in `squad.agent.md`. All spawned agents now inherit the rule unconditionally.
+
+- **The rule is three lines:** (1) Check `git status --porcelain` before any destructive op. (2) Only discard files YOU modified this turn. (3) If foreign uncommitted changes exist, stop and write a drop file — never destroy prior-turn work.
+
+- **Fenster owns the rule for implementation agents.** Added a `## Git Safety` section to Fenster's charter so it's authoritative at the source for any agent doing git work.
+
+- **Regression test anchored by Hockney** in `test/git-safety.test.js` (same branch). Test suite verifies `git status --porcelain` detects uncommitted files correctly and that `create-squad` init emits no destructive git commands.
+
+- **Placement lesson:** When adding safety rules to spawn templates, use the `⚠️` warning sigil to make them visually distinct from functional AFTER work steps. Rules buried in prose get skipped; rules prefixed with `⚠️` get read.
+

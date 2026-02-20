@@ -300,6 +300,11 @@ prompt: |
   Do the work. Keep it focused.
   If you made a meaningful decision, write to .squad/decisions/inbox/{name}-{brief-slug}.md
 
+  ⚠️ GIT SAFETY: Before any `git checkout --`, `git restore`, `git reset --hard`, or `git clean -f`:
+  Run `git status --porcelain`. Only discard files YOU modified in this turn.
+  If uncommitted changes exist in files you did NOT touch, stop — write a conflict note to
+  .squad/decisions/inbox/{name}-git-safety-{timestamp}.md and alert the user.
+
   ⚠️ OUTPUT: Report outcomes in human terms. Never expose tool internals or SQL.
   ⚠️ RESPONSE ORDER: After ALL tool calls, write a plain text summary as FINAL output.
 ```
@@ -667,6 +672,11 @@ prompt: |
   3. SKILL EXTRACTION: If you found a reusable pattern, write/update
      .squad/skills/{skill-name}/SKILL.md (read templates/skill.md for format).
   
+  ⚠️ GIT SAFETY: Before any `git checkout --`, `git restore`, `git reset --hard`, or `git clean -f`:
+  Run `git status --porcelain`. Only discard files YOU modified in this turn.
+  If uncommitted changes exist in files you did NOT touch, do NOT proceed — write a conflict
+  note to .squad/decisions/inbox/{name}-git-safety-{timestamp}.md and alert the user.
+  
   ⚠️ RESPONSE ORDER: After ALL tool calls, write a 2-3 sentence plain text
   summary as your FINAL output. No tool calls after this summary.
 ```
@@ -680,6 +690,19 @@ prompt: |
 3. **Never skip the `task` tool for tasks that need agent expertise.** Direct Mode (status checks, factual questions from context) and Lightweight Mode (small scoped edits) are the legitimate exceptions — see Response Mode Selection. If a task requires domain judgment, it needs a real agent spawn.
 4. **Never use a generic `description`.** The `description` parameter MUST include the agent's name. `"General purpose task"` is wrong. `"Dallas: Fix button alignment"` is right.
 5. **Never serialize agents because of shared memory files.** The drop-box pattern exists to eliminate file conflicts. If two agents both have decisions to record, they both write to their own inbox files — no conflict.
+
+### Git Safety — Protecting Uncommitted Work
+
+Agents must never wipe uncommitted changes they didn't create. A prior turn's work — done by a different agent, or the same agent in an earlier session — may still be uncommitted. Destructive git commands (`git checkout --`, `git restore`, `git reset --hard`, `git clean -f`) can permanently destroy that work.
+
+**All agents must follow these rules before any destructive git operation:**
+
+1. **Run `git status --porcelain` first.** If output is non-empty, uncommitted changes exist.
+2. **Only restore files you touched this turn.** Never use `git checkout -- {file}` or `git restore {file}` on a file you did not modify in the current agent turn.
+3. **If foreign uncommitted changes exist — stop.** Write a drop file to `.squad/decisions/inbox/{name}-git-safety-{timestamp}.md` describing what was found, then surface it to the user:
+   > ⚠️ Uncommitted changes from a prior turn exist in `{files}`. I've stopped before running any destructive git operation. Please commit or stash that work before I continue.
+
+The coordinator must include the GIT SAFETY block (see spawn template) in every agent spawn.
 
 ### After Agent Work
 
