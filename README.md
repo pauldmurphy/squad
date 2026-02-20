@@ -254,43 +254,15 @@ The Coordinator enforces this. No self-review of rejected work.
 
 ---
 
-## What's New in v0.4.0
+## What's New in v0.5.2
 
-- [**Client Compatibility**](docs/scenarios/client-compatibility.md) — Full platform support matrix. Squad now works on CLI and VS Code with graceful degradation.
-- [**VS Code Support**](docs/features/vscode.md) — First-class VS Code guide. `runSubagent` parallel spawning, platform detection, feature degradation table.
-- [**Project Boards**](docs/features/project-boards.md) — GitHub Projects V2 integration. Board + Kanban views synced from labels. `gh auth refresh -s project` required.
-- [**Label Taxonomy**](docs/features/labels.md) — 7-namespace label system (status:, type:, priority:, squad:, go:, release:, era:). Labels are the state machine; boards are projections.
-- [**Notifications**](docs/features/notifications.md) — Your squad pings you on Teams, iMessage, or Discord when they need input. Zero infrastructure in Squad — bring your own MCP notification server.
-- [**MCP Setup Guide**](docs/features/mcp.md) — Step-by-step MCP configuration for CLI and VS Code. Examples: GitHub, Trello, Aspire dashboard.
-- [**Plugin Marketplace**](docs/features/plugins.md) — Discover and install curated agent templates and skills from community repositories. Auto-recommend plugins when adding team members.
-- **Universe Expansion** — 20 → 33 casting universes (MCU, DC, Stranger Things, The Expanse, Arcane, Ted Lasso, Dune, Cowboy Bebop, Fullmetal Alchemist, Seinfeld, The Office, Adventure Time, Futurama, + 2 more)
-- **Docs Growth** — 49 docs across features, scenarios, and guides
-- **Context Optimization** — decisions.md pruned from ~80K to ~33K tokens (251 → 78 blocks). Spawn templates deduplicated. Per-agent context usage dropped from 41–46% to 17–23%. Agents now have 78–83% of their context window for actual work.
-- **Core Growth** — squad.agent.md: 1,100 → 1,771 lines; index.js: 654 lines; 188+ total commits
+- **`upgrade --migrate-directory` exits early fix** — The directory rename step no longer calls `process.exit(0)`, so the full upgrade (squad.agent.md, workflows, .ai-team-templates) now runs after migration in one command
+- **`.slnx`, `.fsproj`, `.vbproj` not detected as .NET** — Proper Visual Studio solution files and F#/VB.NET project files now detected; repos using these get proper dotnet stub CI workflows
+- **Migrations use detected squad directory** — Migration steps and `.gitattributes` rules now use the detected squad directory (`.squad/` or `.ai-team/`) so they work correctly after `--migrate-directory` runs
+
+_See [full release history](docs/whatsnew.md) for all previous versions._
 
 ---
-
-## What's New in v0.3.0
-
-- [**Per-Agent Model Selection**](docs/features/model-selection.md) — Cost-first routing: code work gets standard-tier models (claude-sonnet-4.5), non-code tasks use fast/cheap models (claude-haiku-4.5). 16-model catalog with fallback chains.
-- [**Ralph — Work Monitor**](docs/features/ralph.md) — Built-in squad member that autonomously processes backlogs. Self-chaining work loop: scan GitHub → spawn agents → collect results → repeat.
-- [**@copilot Coding Agent**](docs/features/copilot-coding-agent.md) — GitHub's Copilot agent as a squad member. Three-tier capability profile. Auto-assign with workflow.
-- **Universe Expansion** — 14 → 20 casting universes (Succession, Severance, Lord of the Rings, Attack on Titan, Doctor Who, Monty Python)
-- **Milestones Rename** — "Sprints" → "Milestones" (GitHub-native alignment)
-- **Test Growth** — 92 → 118 tests
-- **Emoji Fixes** — Test suite encoding standardized
-
----
-
-## What's New in v0.2.0
-
-- [**Export & Import CLI**](docs/features/export-import.md) — Portable team snapshots for moving squads between repos
-- [**GitHub Issues Mode**](docs/features/github-issues.md) — Issue-driven development with `gh` CLI integration
-- [**PRD Mode**](docs/features/prd-mode.md) — Product requirements decomposition into work items
-- [**Human Team Members**](docs/features/human-team-members.md) — Mixed AI/human teams with routing
-- [**Skills System**](docs/features/skills.md) — Earned knowledge with confidence lifecycle
-- [**Tiered Response Modes**](docs/features/response-modes.md) — Direct/Lightweight/Standard/Full response depth
-- [**Smart Upgrade**](docs/scenarios/upgrading.md) — Version-aware upgrades with migrations
 
 ---
 
@@ -360,7 +332,37 @@ Already have Squad? Update Squad-owned files to the latest version without touch
 npx github:bradygaster/squad upgrade
 ```
 
-This overwrites `squad.agent.md`, `.ai-team-templates/`, and squad workflow files in `.github/workflows/`. It never touches `.squad/` — your team's knowledge, decisions, and casting are safe.
+This overwrites `squad.agent.md`, `.ai-team-templates/`, and squad workflow files in `.github/workflows/`. It never touches `.squad/` (or `.ai-team/` for repos that haven't migrated yet) — your team's knowledge, decisions, and casting are safe.
+
+### Migrating to `.squad/`
+
+In v0.5.0, Squad renamed its team state directory from `.ai-team/` to `.squad/`. Existing repos using `.ai-team/` continue to work — Squad detects both and shows a deprecation warning if you're still on `.ai-team/`.
+
+**To migrate (two steps):**
+
+```bash
+# Step 1: Upgrade to get the migration command
+npx github:bradygaster/squad upgrade
+
+# Step 2: Rename the directory
+npx github:bradygaster/squad upgrade --migrate-directory
+```
+
+Then commit your changes:
+
+```bash
+git add -A
+git commit -m "chore: migrate .ai-team/ → .squad/"
+```
+
+**What the migration does:**
+- Renames `.ai-team/` → `.squad/`
+- Updates `.gitignore` and `.gitattributes` references
+- Scrubs email addresses from migrated files (PII cleanup)
+
+**Timeline:** `.ai-team/` is supported through v0.6.0. Migration becomes required in v1.0.0.
+
+**Safety:** Migration is safe and reversible with `git revert`. Full details in [Migration Guide](docs/migration/v0.5.0-squad-rename.md).
 
 ### Insider Program
 
@@ -421,6 +423,6 @@ These are known platform-level issues affecting the Squad experience. They're no
 
 ## Status
 
-🟣 **Experimental** — v0.4.0-dev. Contributors welcome.
+🟣 **Experimental** — v0.5.2. Contributors welcome.
 
 Conceived by [@bradygaster](https://github.com/bradygaster).
