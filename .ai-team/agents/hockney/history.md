@@ -89,3 +89,10 @@ _Summarized from initial assessment (2026-02-07). Full entries in `history-archi
 
 📌 Team update (2026-02-15): Directory structure rename planned — .ai-team/ → .squad/ starting v0.5.0 with backward-compatible migration; full removal in v1.0.0 — Brady
 
+- **Git Safety Regression Tests (#86)** — **What I Did:**
+  - Created `test/git-safety.test.js` — 8 tests across 2 describe blocks covering the issue where agents used `git checkout` / `git restore` to wipe uncommitted work from prior sessions.
+  - **Suite 1 — `git status --porcelain` detects uncommitted changes (4 tests):** Verifies clean repo is empty; untracked file is reported; modified tracked file is reported; uncommitted file survives a safe (read-only) recovery sequence where no destructive git command is run.
+  - **Suite 2 — create-squad CLI init emits no destructive git commands (4 tests):** Asserts CLI output contains no `git checkout`, `git restore`, or `git clean -f`; asserts uncommitted files in the target repo are untouched after `create-squad` init runs.
+  - **Design rationale:** We can't spawn a real agent in tests, so we anchor on two detectable preconditions: (a) the porcelain-status check agents must run before any destructive op, and (b) the CLI itself doesn't emit destructive commands. Together these provide a regression anchor — if either precondition breaks, we'd know exactly where to look.
+  - **Branch:** `squad/86-prevent-git-checkout-data-loss`. All 72 tests pass (8 new, 64 existing).
+
